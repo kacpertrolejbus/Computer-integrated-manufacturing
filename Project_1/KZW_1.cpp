@@ -1,4 +1,5 @@
 ﻿using namespace std;
+using std::begin, std::end;
 
 #include <iostream>
 #include <vector>
@@ -68,10 +69,70 @@ planowane_wyniki Calculate(vector<zadanie> zadania)
     return wyniki;
 }
 
+
+zadanie minimum(const vector<zadanie>& zadania)
+{
+    return *min_element(zadania.begin(), zadania.end(),
+        [](const zadanie& a, const zadanie& b)
+        {
+            return a.rj < b.rj;
+        });
+}
+
+zadanie maximum(const vector<zadanie>& zadania)
+{
+    return *max_element(zadania.begin(), zadania.end(),
+        [](const zadanie& a, const zadanie& b)
+        {
+            return a.qj < b.qj;
+        });
+}
+
 vector<zadanie> schrage(vector<zadanie> zadania)
 {
-    int k = 1;
+    vector<zadanie> pusty;
+    vector<zadanie> pelny = zadania;
+    vector<zadanie> permutacja;
 
+    int t = minimum(pelny).rj;
+    int Cmax = 0;
+
+    while (!pusty.empty() || !pelny.empty())
+    {
+        while (!pelny.empty() && minimum(pelny).rj <= t)
+        {
+            auto it = min_element(pelny.begin(), pelny.end(),
+                [](const zadanie& a, const zadanie& b)
+                {
+                    return a.rj < b.rj;
+                });
+
+            pusty.push_back(*it);
+            pelny.erase(it);
+        }
+
+        if (!pusty.empty())
+        {
+            auto it = max_element(pusty.begin(), pusty.end(),
+                [](const zadanie& a, const zadanie& b)
+                {
+                    return a.qj < b.qj;
+                });
+
+            zadanie j = *it;
+            pusty.erase(it);
+
+            permutacja.push_back(j);
+            t += j.pj;
+            Cmax = max(Cmax, t + j.qj);
+        }
+        else
+        {
+            t = minimum(pelny).rj;
+        }
+    }
+
+    return permutacja;
 }
 
 int main()

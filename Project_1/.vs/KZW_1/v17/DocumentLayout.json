@@ -1,9 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\krusz\\Dokumenty\\Studia\\Semestr_6\\KZW\\KZW_1\\",
+  "WorkspaceRootPath": "C:\\Users\\whebd\\source\\repos\\Computer-integrated-manufacturing\\Project_1\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{E90B9F97-29C4-4BD9-816A-A01768FBD5B2}|KZW_1.vcxproj|C:\\Users\\krusz\\Dokumenty\\Studia\\Semestr_6\\KZW\\KZW_1\\KZW_1.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{E90B9F97-29C4-4BD9-816A-A01768FBD5B2}|KZW_1.vcxproj|C:\\Users\\whebd\\source\\repos\\Computer-integrated-manufacturing\\Project_1\\KZW_1.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{E90B9F97-29C4-4BD9-816A-A01768FBD5B2}|KZW_1.vcxproj|solutionrelative:KZW_1.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -14,21 +14,25 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
             },
             {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "KZW_1.cpp",
-              "DocumentMoniker": "C:\\Users\\krusz\\Dokumenty\\Studia\\Semestr_6\\KZW\\KZW_1\\KZW_1.cpp",
+              "DocumentMoniker": "C:\\Users\\whebd\\source\\repos\\Computer-integrated-manufacturing\\Project_1\\KZW_1.cpp",
               "RelativeDocumentMoniker": "KZW_1.cpp",
-              "ToolTip": "C:\\Users\\krusz\\Dokumenty\\Studia\\Semestr_6\\KZW\\KZW_1\\KZW_1.cpp",
+              "ToolTip": "C:\\Users\\whebd\\source\\repos\\Computer-integrated-manufacturing\\Project_1\\KZW_1.cpp",
               "RelativeToolTip": "KZW_1.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAA0AAAAAAAAAA==",
+              "ViewState": "AgIAADwAAAAAAAAAAAAAAEgAAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2026-03-11T08:36:24.621Z",
               "EditorCaption": ""
