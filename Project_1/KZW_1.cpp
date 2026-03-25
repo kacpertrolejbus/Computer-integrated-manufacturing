@@ -206,31 +206,31 @@ int schragePMTN(vector<zadanie> N)
 {
     int t = 0;
     int Cmax = 0;
-    priority_queue<zadanie, vector<zadanie>, PQj> G;
+    priority_queue<zadanie, vector<zadanie>, PQj> G; //Zbiór gotowych zadań
 
     // Inicjalizuj pozostale_p na pj dla każdego zadania
     for(auto& z : N) {
         z.pozostale_p = z.pj;
     }
 
-    zadanie l;
+    zadanie l; //obecne zadanie
     l.id = 0;
     l.qj = 0;
-    l.pozostale_p = 0;
+    l.pozostale_p = 0; //ustawione na 0 ponieważ łatwe do przebicia 
 
     sort(N.begin(), N.end(), [](const zadanie& a, const zadanie& b){
         return a.rj > b.rj;
-    });
+    }); //posortowane malejąco
 
-    while(!N.empty() || !G.empty() || l.pozostale_p > 0)
+    while(!N.empty() || !G.empty() || l.pozostale_p > 0) //główna petla 
     {
-        while (!N.empty() && N.back().rj <= t)
+        while (!N.empty() && N.back().rj <= t) //odbiór dostaw z N do G
         {
             zadanie j = N.back();
             N.pop_back();
             G.push(j);
 
-            if(j.qj > l.qj)
+            if(j.qj > l.qj) //jeśli nowe zadanie ma większe qj niż to na maszynie to przerywamy 
             {
                 cout << "Przerwanie zadania " << j.id << "!\n Zdejmuje z maszyny zadanie " << l.id << endl;
                 l.pozostale_p = l.pozostale_p - (t - j.rj);
@@ -242,20 +242,20 @@ int schragePMTN(vector<zadanie> N)
             }
         }
 
-        if(G.empty() && !N.empty() && l.pozostale_p == 0)
+        if(G.empty() && !N.empty() && l.pozostale_p == 0) //skok w czasie  do najbliższego rj w N jeśli nie ma gotowych zadań
         {
             t = N.back().rj;
-            continue;
+            continue; //powrót na początek pętli
         }
 
-        if(l.pozostale_p == 0 && !G.empty())
+        if(l.pozostale_p == 0 && !G.empty()) //jeśli maszyna jest wolna lub zadanie się skończyło to bierzemy nowe G
         {
             l = G.top();
             G.pop();
             cout << "[Czas " << t << "] -> Zadanie " << l.id << " wchodzi na maszyne (zostalo mu " << l.pozostale_p << " czasu)" << endl;
         }
 
-        if(l.pozostale_p > 0)
+        if(l.pozostale_p > 0) //wykonanie zadania na maszynie
         {
             int next_t;
             if(!N.empty())
