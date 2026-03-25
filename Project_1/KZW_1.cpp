@@ -202,7 +202,7 @@ struct PQj{
     }
 };
 
-int schragePMTN(vector<zadanie> N)
+int schragePMTN(vector<zadanie> N, bool czyprint = true)
 {
     int t = 0;
     int Cmax = 0;
@@ -232,6 +232,7 @@ int schragePMTN(vector<zadanie> N)
 
             if(j.qj > l.qj) //jeśli nowe zadanie ma większe qj niż to na maszynie to przerywamy 
             {
+                if(czyprint)
                 cout << "Przerwanie zadania " << j.id << "!\n Zdejmuje z maszyny zadanie " << l.id << endl;
                 l.pozostale_p = l.pozostale_p - (t - j.rj);
                 t = j.rj;
@@ -252,6 +253,7 @@ int schragePMTN(vector<zadanie> N)
         {
             l = G.top();
             G.pop();
+            if(czyprint)
             cout << "[Czas " << t << "] -> Zadanie " << l.id << " wchodzi na maszyne (zostalo mu " << l.pozostale_p << " czasu)" << endl;
         }
 
@@ -272,6 +274,7 @@ int schragePMTN(vector<zadanie> N)
             if(l.pozostale_p == 0)
             {
                 Cmax = max(Cmax, t + l.qj);
+                if(czyprint)
                 cout << "[Czas " << t << "] <- ZAKONCZENIE zadania " << l.id << " (aktualny rekord Cmax: " << Cmax << ")" << endl;
             }
         }
@@ -405,7 +408,7 @@ void carlierRekurencja(vector<zadanie>& zadania, int& UB, vector<zadanie>& najle
 
     zadania[idxC].rj = max(zadania[idxC].rj, rK + pK);
     {
-        int LBpmtn = schragePMTN(zadania);
+        int LBpmtn = schragePMTN(zadania, false);
         vector<zadanie> zbiorK = vector<zadanie>(pi.begin() + c + 1, pi.begin() + b + 1);
         vector<zadanie> zbiorKc = zbiorK;
         zbiorKc.push_back(zadania[idxC]);
@@ -420,7 +423,7 @@ void carlierRekurencja(vector<zadanie>& zadania, int& UB, vector<zadanie>& najle
 
     zadania[idxC].qj = max(zadania[idxC].qj, qK + pK);
     {
-        int LBpmtn = schragePMTN(zadania);
+        int LBpmtn = schragePMTN(zadania, false);
         vector<zadanie> zbiorK = vector<zadanie>(pi.begin() + c + 1, pi.begin() + b + 1);
         vector<zadanie> zbiorKc = zbiorK;
         zbiorKc.push_back(zadania[idxC]);
