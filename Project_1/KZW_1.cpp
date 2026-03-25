@@ -3,6 +3,8 @@
 #include <random>
 #include <queue>
 #include <unordered_map>
+#include <algorithm>
+#include <climits>
 
 
 using namespace std;
@@ -13,6 +15,7 @@ struct zadanie
     int rj; // czas przygotowania/termin dostępności
     int pj; // czas wykonania
     int qj; // czas dostarczenia/stygnięcia
+    int pozostale_p; //czas, który został do wykonania
 };
 
 struct planowane_wyniki
@@ -74,12 +77,6 @@ planowane_wyniki Calculate(vector<zadanie> zadania)
     return wyniki;
 }
 
-vector<zadanie> schrage(vector<zadanie> zadania)
-{
-    int k = 1;      
-    return zadania;
-}
-
 // do kolejki N -> najmniejsze r na górze
 struct CompareR
 {
@@ -97,6 +94,71 @@ struct CompareQ
         return a.qj < b.qj;
     }
 };
+
+zadanie minimum(const vector<zadanie>& zadania)
+{
+    return *min_element(zadania.begin(), zadania.end(),
+        [](const zadanie& a, const zadanie& b)
+        {
+            return a.rj < b.rj;
+        });
+}
+
+zadanie maximum(const vector<zadanie>& zadania)
+{
+    return *max_element(zadania.begin(), zadania.end(),
+        [](const zadanie& a, const zadanie& b)
+        {
+            return a.qj < b.qj;
+        });
+}
+
+vector<zadanie> schrage(vector<zadanie> zadania)
+{
+    vector<zadanie> pusty;
+    vector<zadanie> pelny = zadania;
+    vector<zadanie> permutacja;
+
+    int t = minimum(pelny).rj;
+    int Cmax = 0;
+
+    while (!pusty.empty() || !pelny.empty())
+    {
+        while (!pelny.empty() && minimum(pelny).rj <= t)
+        {
+            auto it = min_element(pelny.begin(), pelny.end(),
+                [](const zadanie& a, const zadanie& b)
+                {
+                    return a.rj < b.rj;
+                });
+
+            pusty.push_back(*it);
+            pelny.erase(it);
+        }
+
+        if (!pusty.empty())
+        {
+            auto it = max_element(pusty.begin(), pusty.end(),
+                [](const zadanie& a, const zadanie& b)
+                {
+                    return a.qj < b.qj;
+                });
+
+            zadanie j = *it;
+            pusty.erase(it);
+
+            permutacja.push_back(j);
+            t += j.pj;
+            Cmax = max(Cmax, t + j.qj);
+        }
+        else
+        {
+            t = minimum(pelny).rj;
+        }
+    }
+
+    return permutacja;
+}
 
 
 vector<zadanie> schrage_heap(vector<zadanie> zadania)
@@ -134,27 +196,293 @@ vector<zadanie> schrage_heap(vector<zadanie> zadania)
     return wynik;
 }
 
-int main()
+struct PQj{
+    bool operator()(const zadanie& a, const zadanie& b){
+        return a.qj < b.qj;
+    }
+};
+
+int schragePMTN(vector<zadanie> N)
 {
+    int t = 0;
+    int Cmax = 0;
+    priority_queue<zadanie, vector<zadanie>, PQj> G;
+
+    // Inicjalizuj pozostale_p na pj dla każdego zadania
+    for(auto& z : N) {
+        z.pozostale_p = z.pj;
+    }
+
+    zadanie l;
+    l.id = 0;
+    l.qj = 0;
+    l.pozostale_p = 0;
+
+    sort(N.begin(), N.end(), [](const zadanie& a, const zadanie& b){
+        return a.rj > b.rj;
+    });
+
+    while(!N.empty() || !G.empty() || l.pozostale_p > 0)
+    {
+        while (!N.empty() && N.back().rj <= t)
+        {
+            zadanie j = N.back();
+            N.pop_back();
+            G.push(j);
+
+            if(j.qj > l.qj)
+            {
+                cout << "Przerwanie zadania " << j.id << "!\n Zdejmuje z maszyny zadanie " << l.id << endl;
+                l.pozostale_p = l.pozostale_p - (t - j.rj);
+                t = j.rj;
+                if(l.pozostale_p > 0)
+                {
+                    G.push(l);
+                }
+            }
+        }
+
+        if(G.empty() && !N.empty() && l.pozostale_p == 0)
+        {
+            t = N.back().rj;
+            continue;
+        }
+
+        if(l.pozostale_p == 0 && !G.empty())
+        {
+            l = G.top();
+            G.pop();
+            cout << "[Czas " << t << "] -> Zadanie " << l.id << " wchodzi na maszyne (zostalo mu " << l.pozostale_p << " czasu)" << endl;
+        }
+
+        if(l.pozostale_p > 0)
+        {
+            int next_t;
+            if(!N.empty())
+            {
+                next_t = min(t + l.pozostale_p, N.back().rj);
+            }
+            else{
+                next_t = t + l.pozostale_p;
+            }
+
+            l.pozostale_p -= (next_t - t);
+            t = next_t;
+
+            if(l.pozostale_p == 0)
+            {
+                Cmax = max(Cmax, t + l.qj);
+                cout << "[Czas " << t << "] <- ZAKONCZENIE zadania " << l.id << " (aktualny rekord Cmax: " << Cmax << ")" << endl;
+            }
+        }
+    }
+
+    return Cmax;
+}
+
+int hBoundFromTasks(const vector<zadanie>& tasks)
+{
+    if(tasks.empty())
+    {
+        return 0;
+    }
+
+    int minR = INT_MAX;
+    int minQ = INT_MAX;
+    int sumP = 0;
+
+    for(const auto& z : tasks)
+    {
+        minR = min(minR, z.rj);
+        minQ = min(minQ, z.qj);
+        sumP += z.pj;
+    }
+
+    return minR + sumP + minQ;
+}
+
+void carlierRekurencja(vector<zadanie>& zadania, int& UB, vector<zadanie>& najlepszaPermutacja)
+{
+    vector<zadanie> pi = schrage(zadania);
+    planowane_wyniki wyniki = Calculate(pi);
+    int U = wyniki.Cmax;
+
+    if(U < UB)
+    {
+        UB = U;
+        najlepszaPermutacja = pi;
+    }
+
+    int n = static_cast<int>(pi.size());
+    if(n == 0)
+    {
+        return;
+    }
+
+    vector<int> C(n, 0);
+    int t = 0;
+    for(int i = 0; i < n; i++)
+    {
+        t = max(t, pi[i].rj) + pi[i].pj;
+        C[i] = t;
+    }
+
+    int b = -1;
+    for(int i = n - 1; i >= 0; i--)
+    {
+        if(C[i] + pi[i].qj == U)
+        {
+            b = i;
+            break;
+        }
+    }
+
+    if(b == -1)
+    {
+        return;
+    }
+
+    int a = -1;
+    int sumP = 0;
+    for(int i = b; i >= 0; i--)
+    {
+        sumP += pi[i].pj;
+        if(pi[i].rj + sumP + pi[b].qj == U)
+        {
+            a = i;
+        }
+    }
+
+    if(a == -1)
+    {
+        return;
+    }
+
+    int c = -1;
+    for(int i = b - 1; i >= a; i--)
+    {
+        if(pi[i].qj < pi[b].qj)
+        {
+            c = i;
+            break;
+        }
+    }
+
+    if(c == -1)
+    {
+        return;
+    }
+
+    int rK = INT_MAX;
+    int qK = INT_MAX;
+    int pK = 0;
+
+    for(int i = c + 1; i <= b; i++)
+    {
+        rK = min(rK, pi[i].rj);
+        qK = min(qK, pi[i].qj);
+        pK += pi[i].pj;
+    }
+
+    int idC = pi[c].id;
+    int idxC = -1;
+    for(int i = 0; i < static_cast<int>(zadania.size()); i++)
+    {
+        if(zadania[i].id == idC)
+        {
+            idxC = i;
+            break;
+        }
+    }
+
+    if(idxC == -1)
+    {
+        return;
+    }
+
+    int oldR = zadania[idxC].rj;
+    int oldQ = zadania[idxC].qj;
+
+    zadania[idxC].rj = max(zadania[idxC].rj, rK + pK);
+    {
+        int LBpmtn = schragePMTN(zadania);
+        vector<zadanie> zbiorK = vector<zadanie>(pi.begin() + c + 1, pi.begin() + b + 1);
+        vector<zadanie> zbiorKc = zbiorK;
+        zbiorKc.push_back(zadania[idxC]);
+
+        int LB = max({LBpmtn, hBoundFromTasks(zbiorK), hBoundFromTasks(zbiorKc)});
+        if(LB < UB)
+        {
+            carlierRekurencja(zadania, UB, najlepszaPermutacja);
+        }
+    }
+    zadania[idxC].rj = oldR;
+
+    zadania[idxC].qj = max(zadania[idxC].qj, qK + pK);
+    {
+        int LBpmtn = schragePMTN(zadania);
+        vector<zadanie> zbiorK = vector<zadanie>(pi.begin() + c + 1, pi.begin() + b + 1);
+        vector<zadanie> zbiorKc = zbiorK;
+        zbiorKc.push_back(zadania[idxC]);
+
+        int LB = max({LBpmtn, hBoundFromTasks(zbiorK), hBoundFromTasks(zbiorKc)});
+        if(LB < UB)
+        {
+            carlierRekurencja(zadania, UB, najlepszaPermutacja);
+        }
+    }
+    zadania[idxC].qj = oldQ;
+}
+
+vector<zadanie> carlier(vector<zadanie> zadania)
+{
+    vector<zadanie> oryginalneZadania = zadania;
+    int UB = INT_MAX;
+    vector<zadanie> najlepszaPermutacja;
+    carlierRekurencja(zadania, UB, najlepszaPermutacja);
+
+    unordered_map<int, zadanie> poId;
+    for(const auto& z : oryginalneZadania)
+    {
+        poId[z.id] = z;
+    }
+
+    vector<zadanie> wynikOryginalny;
+    for(const auto& z : najlepszaPermutacja)
+    {
+        wynikOryginalny.push_back(poId[z.id]);
+    }
+
+    return wynikOryginalny;
+}
+int main()
+{   cout << "generowanie instancji" << endl;
     vector<zadanie> test1 = generatorInst(6, 42, 29);
     int A = 0;
     for (auto& j : test1)
     {
         A += j.pj;
     }
-
+    cout << "instancja 1" << endl;
     for(int i = 0; i < test1.size(); i++)
     {
         cout << "Zadanie " << test1[i].id << ": r = " << test1[i].rj << ", p = " << test1[i].pj << ", q = " << test1[i].qj << endl;
     }
 
     vector<zadanie> wynik1 = schrage_heap(test1);
-
+    cout << "kolejnosc zadan po algorytmie Schrage" << endl;
     for(int i = 0; i < wynik1.size(); i++)
     {
         cout << "Zadanie " << wynik1[i].id << ": r = " << wynik1[i].rj << ", p = " << wynik1[i].pj << ", q = " << wynik1[i].qj << endl;
     }
-
+     vector<zadanie> wynik2 = schrage(test1);
+    cout << "kolejnosc zadan po algorytmie Schrage 2" << endl;
+    for(int i = 0; i < wynik2.size(); i++)
+    {
+        cout << "Zadanie " << wynik2[i].id << ": r = " << wynik2[i].rj << ", p = " << wynik2[i].pj << ", q = " << wynik2[i].qj << endl;
+    } 
+    
+    cout << "wyniki kalkulowane" << endl;
     planowane_wyniki wyniki1 = Calculate(test1);
     for (int i = 1; i <= test1.size(); i++)
     {
@@ -163,6 +491,7 @@ int main()
     cout << "Cmax: " << wyniki1.Cmax << endl;
     
     
+    cout << "wyniki algorytmu Schrage" << endl;
     planowane_wyniki wyniki1_schrage = Calculate(wynik1);
     for (int i = 0; i < wynik1.size(); i++)
     {
@@ -171,7 +500,7 @@ int main()
     cout << "Cmax: " << wyniki1_schrage.Cmax << endl;
 
 
-
+    cout << "generowanie instancji 2 i wyniki" << endl;
     vector<zadanie> test2 = generatorInst(6, 42, A);
     planowane_wyniki wyniki2 = Calculate(test2);
     for (int i = 1; i <= test2.size(); i++)
@@ -179,5 +508,18 @@ int main()
         cout << "Zadanie " << i << ": S = " << wyniki2.S[i] << ", C = " << wyniki2.C[i] << endl;
     }
     cout << "Cmax: " << wyniki2.Cmax << endl;
+    cout << "wyniki algorytmu Schrage PMTN" << endl;
+    int Cmax_pmt = schragePMTN(test1);
+    cout << "Cmax: " << Cmax_pmt << endl;
+
+    cout << "wyniki algorytmu Carlier" << endl;
+    vector<zadanie> wynikCarlier = carlier(test1);
+    for(int i = 0; i < wynikCarlier.size(); i++)
+    {
+        cout << "Zadanie " << wynikCarlier[i].id << ": r = " << wynikCarlier[i].rj << ", p = " << wynikCarlier[i].pj << ", q = " << wynikCarlier[i].qj << endl;
+    }
+    planowane_wyniki wynikiCarlier = Calculate(wynikCarlier);
+    cout << "Cmax: " << wynikiCarlier.Cmax << endl;
+
     return 0;
 }
