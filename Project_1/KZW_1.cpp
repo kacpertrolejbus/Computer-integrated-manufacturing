@@ -461,6 +461,7 @@ vector<zadanie> carlier(vector<zadanie> zadania)
 int main()
 {   cout << "generowanie instancji" << endl;
     vector<zadanie> test1 = generatorInst(6, 42, 29);
+    planowane_wyniki wyniki1 = Calculate(test1);
     int A = 0;
     for (auto& j : test1)
     {
@@ -471,38 +472,9 @@ int main()
     {
         cout << "Zadanie " << test1[i].id << ": r = " << test1[i].rj << ", p = " << test1[i].pj << ", q = " << test1[i].qj << endl;
     }
-
-    vector<zadanie> wynik1 = schrage_heap(test1);
-    cout << "kolejnosc zadan po algorytmie Schrage" << endl;
-    for(int i = 0; i < wynik1.size(); i++)
-    {
-        cout << "Zadanie " << wynik1[i].id << ": r = " << wynik1[i].rj << ", p = " << wynik1[i].pj << ", q = " << wynik1[i].qj << endl;
-    }
-     vector<zadanie> wynik2 = schrage(test1);
-    cout << "kolejnosc zadan po algorytmie Schrage 2" << endl;
-    for(int i = 0; i < wynik2.size(); i++)
-    {
-        cout << "Zadanie " << wynik2[i].id << ": r = " << wynik2[i].rj << ", p = " << wynik2[i].pj << ", q = " << wynik2[i].qj << endl;
-    } 
-    
-    cout << "wyniki kalkulowane" << endl;
-    planowane_wyniki wyniki1 = Calculate(test1);
-    for (int i = 1; i <= test1.size(); i++)
-    {
-        cout << "Zadanie " << i << ": S = " << wyniki1.S[i] << ", C = " << wyniki1.C[i] << endl;
-    }
     cout << "Cmax: " << wyniki1.Cmax << endl;
     
-    
-    cout << "wyniki algorytmu Schrage" << endl;
-    planowane_wyniki wyniki1_schrage = Calculate(wynik1);
-    for (int i = 0; i < wynik1.size(); i++)
-    {
-        cout << "Zadanie " << wynik1[i].id << ": S = " << wyniki1_schrage.S[wynik1[i].id] << ", C = " << wyniki1_schrage.C[wynik1[i].id] << endl;
-    }
-    cout << "Cmax: " << wyniki1_schrage.Cmax << endl;
-
-
+   
     cout << "generowanie instancji 2 i wyniki" << endl;
     vector<zadanie> test2 = generatorInst(6, 42, A);
     planowane_wyniki wyniki2 = Calculate(test2);
@@ -511,18 +483,72 @@ int main()
         cout << "Zadanie " << i << ": S = " << wyniki2.S[i] << ", C = " << wyniki2.C[i] << endl;
     }
     cout << "Cmax: " << wyniki2.Cmax << endl;
-    cout << "wyniki algorytmu Schrage PMTN" << endl;
-    int Cmax_pmt = schragePMTN(test1);
-    cout << "Cmax: " << Cmax_pmt << endl;
+    
+    
 
-    cout << "wyniki algorytmu Carlier" << endl;
-    vector<zadanie> wynikCarlier = carlier(test1);
-    for(int i = 0; i < wynikCarlier.size(); i++)
-    {
-        cout << "Zadanie " << wynikCarlier[i].id << ": r = " << wynikCarlier[i].rj << ", p = " << wynikCarlier[i].pj << ", q = " << wynikCarlier[i].qj << endl;
-    }
-    planowane_wyniki wynikiCarlier = Calculate(wynikCarlier);
-    cout << "Cmax: " << wynikiCarlier.Cmax << endl;
+    // schrage dla test1
+    cout << "Schrage standardowy" << endl;
+    vector<zadanie> perm1 = schrage(test1);
+    planowane_wyniki wyn_sch1 = Calculate(perm1);
+    cout << "Schrage - permutacja (test1) id: ";
+    for (auto& z : perm1) cout << z.id << " ";
+    cout << endl;
+    cout << "Cmax (po permutacji Schrage): " << wyn_sch1.Cmax << endl;
 
-    return 0;
+    // schrage dla test2
+    vector<zadanie> perm2 = schrage(test2);
+    planowane_wyniki wyn_sch2 = Calculate(perm2);
+    cout << "Schrage - permutacja (test2) id: ";
+    for (auto& z : perm2) cout << z.id << " ";
+    cout << endl;
+    cout << "Cmax (po permutacji Schrage): " << wyn_sch2.Cmax << endl;
+  
+
+
+    // schrage heap dla test1
+    cout << "Schrage heap" << endl;
+    vector<zadanie> perm1h = schrage_heap(test1);
+    planowane_wyniki wyn_schh1 = Calculate(perm1h);
+    cout << "Schrage - permutacja (test1) id: ";
+    for (auto& z : perm1h) cout << z.id << " ";
+    cout << endl;
+    cout << "Cmax (po permutacji Schrage heap): " << wyn_schh1.Cmax << endl;
+
+    // schrage heap dla test2
+    vector<zadanie> perm2h = schrage_heap(test2);
+    planowane_wyniki wyn_schh2 = Calculate(perm2h);
+    cout << "Schrage - permutacja (test2) id: ";
+    for (auto& z : perm2h) cout << z.id << " ";
+    cout << endl;
+    cout << "Cmax (po permutacji Schrage heap): " << wyn_schh2.Cmax << endl;
+    
+
+    // schrage PMTN dla test1
+    cout << "Schrage PMTN" << endl;
+    int CmaxPMTN1 = schragePMTN(test1);
+    cout << "Cmax (po permutacji Schrage PMTN): " << CmaxPMTN1 << endl;
+
+    // schrage PMTN dla test2
+    int CmaxPMTN2 = schragePMTN(test2);
+    cout << "Cmax (po permutacji Schrage PMTN): " << CmaxPMTN2 << endl;
+
+    //carlier dla test1
+    cout << "Carlier" << endl;
+    vector<zadanie> carlierPerm1 = carlier(test1);
+    planowane_wyniki wyn_carlier1 = Calculate(carlierPerm1);
+    cout << "Carlier - permutacja (test1) id: ";
+    for (auto& z : carlierPerm1) cout << z.id << " ";
+    cout << endl;
+    cout << "Cmax (po permutacji Carliera): " << wyn_carlier1.Cmax << endl;
+
+    //carlier dla test2
+    vector<zadanie> carlierPerm2 = carlier(test2);
+    planowane_wyniki wyn_carlier2 = Calculate(carlierPerm2);
+    cout << "Carlier - permutacja (test2) id: ";
+    for (auto& z : carlierPerm2) cout << z.id << " ";   
+    cout << endl;
+    cout << "Cmax (po permutacji Carliera): " << wyn_carlier2.Cmax << endl;
+
+     return 0;
+
 }
